@@ -1,27 +1,36 @@
 <?php
 header("Cache-Control: no-cache, must-revalidate");
-header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
-$RAZD=";";
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");//для предотвращения кэширования
+$RAZD=";";//разделитель, который используется в файле
 $txt=file_get_contents("m.csv");
-$stroki=explode("\n",$txt);
-$rez=array();
-$rez["z"]=explode($RAZD,$stroki[0]);
+//первая строка - названия полей, должны быть уникальными
+//вторая - типы данных, должны быть одним из:
+//	Целое
+//	Дробное
+//	Выбор (если это логическое или перечень)
+//	Изображение - путь к файлу
+//	Название - ключевые поля, уникальная комбинация которых используется для создания выборки
+//третья - единицы измерения
+//четвёртая и далее - данные
+$stroki=explode("\n",$txt);//разделение файла на строки
+$rez=array();//общий массив, который превращается в json и передаётся клиенту
+$rez["z"]=explode($RAZD,$stroki[0]);//заголовки таблицы
 foreach($rez["z"] as $i => $z)
 {
 	$rez["z"][$i]=trim($z);
 }
-$rez["z"][0]=substr($rez["z"][0],3);//для уничтожения символа 65279
-$rez["types"]=explode($RAZD,$stroki[1]);
+$rez["z"][0]=substr($rez["z"][0],3);//для уничтожения символа 65279 при использовании UTF-8 с BOM, что удобно для редактирования в Excel
+$rez["types"]=explode($RAZD,$stroki[1]);//типы данных
 foreach($rez["types"] as $i => $z)
 {
 	$rez["types"][$i]=trim($z);
 }
-$rez["ed"]=explode($RAZD,$stroki[2]);
+$rez["ed"]=explode($RAZD,$stroki[2]);//единицы измерения
 foreach($rez["ed"] as $i => $z)
 {
 	$rez["ed"][$i]=trim($z);
 }
-$rez["data"]=array();
+$rez["data"]=array();//сводные данные таблицы
 for($i=0;$i<count($rez["types"]);$i++)
 {
 	$tt=trim($rez["types"][$i]);//Текущий тип
@@ -29,18 +38,18 @@ for($i=0;$i<count($rez["types"]);$i++)
 	$ted=trim($rez["z"][$i]);//Текущая единица измерения
 	if(($tt==="Название")||($tt==="Изображение")||($tt==="Выбор"))
 	{
-		$rez["data"][trim($tz)]=array("type"=>$tt,"nabor"=>array(),"ed"=>$ted);
+		$rez["data"][trim($tz)]=array("type"=>$tt,"nabor"=>array(),"ed"=>$ted);//для списков будет определён массив уникальных значений
 	}
 	else if(($tt==="Целое")||($tt==="Дробное"))
 	{
-		$rez["data"][trim($tz)]=array("type"=>$tt,"min"=>null,"max"=>null,"ed"=>$ted);
+		$rez["data"][trim($tz)]=array("type"=>$tt,"min"=>null,"max"=>null,"ed"=>$ted);//для чисел будут определены минимум и максимум
 	}
 	else
 	{
-		$rez["data"][trim($tz)]=array("type"=>"");
+		$rez["data"][trim($tz)]=array("type"=>"");//для данных неверного типа
 	}
 }
-$rez["table"]=array();
+$rez["table"]=array();//таблица со строками, без агрегации
 $rez["nazv"]=array();//Уникальные комбинации названий
 for($i=3;$i<count($stroki)-1;$i++)
 {
@@ -167,7 +176,7 @@ foreach($rez["nazv"] as $i => $tn)
 			}
 		}
 	}
-	foreach($t_nazv_col as $t_col=>$cols)
+	foreach($t_nazv_col as $t_col=>$cols)//определение повторяющихся значений в рамках одной комбинации названий
 	{
 		$pred=null;
 		$last_new_index=null;
