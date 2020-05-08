@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>        
+</head>
+<div id="osn">
+    <div>
+        <button v-for="i in pages" v-on:click="page=i" :disabled="page===i">{{ i }}</button>
+    </div>
+    <div v-if="zagr">
+        <!--<div v-if="page==='Каталог'">
+            <button v-for="i in nazv" v-on:click="page='element';element=i;element_page=element_pages[0]">{{ i.name.Марка }} {{ i.name.Модель }}</button>
+        </div>-->
+        <div v-if="page==='element'">
+            <div>
+                <button v-for="i in element_pages" v-on:click="element_page=i" :disabled="element_page===i">{{ i }}</button>
+            </div>
+            <div v-if="element_page==='Обзор'" v-for="(z,i) in element.data">
+                <b>
+                    {{ i }}:
+                </b>
+                <font v-if="z.type==='Выбор'">
+                    <!--<button v-if="z.nabor.length>1" v-for="i2 in z.nabor">{{ i2 }}</button>-->
+                    <font>{{ z.nabor.join(',') }}</font></font>
+                <b v-if="z.type==='Название'">{{ z.nabor.join(',') }}</b>
+                <font v-if="(z.type==='Целое')||(z.type==='Дробное')">
+                    <font v-if="z.max===z.min">
+                        {{ z.max.toLocaleString() }} {{ z.ed }}
+                    </font>
+                    <font v-else>
+                        {{ z.min.toLocaleString() }}..{{ z.max.toLocaleString() }} {{ z.ed }}
+                    </font>
+                </font>
+                <img v-for="i2 in z.nabor" v-if="z.type==='Изображение'" v-bind:src="i2" width="100px" />
+            </div>
+            <div v-if="element_page==='Комплектации'">
+                <div v-if="z.type==='Название'" v-for="(z,i) in element.data">
+                    <b>{{ z.nabor[0] }}</b>
+                </div>
+                <div v-if="z.type==='Изображение'" v-for="(z,i) in element.data">
+                    <img v-for="i2 in z.nabor" v-bind:src="i2" width="100px" />
+                </div>
+                <table border="1">
+                    <tr>
+                        <th>Комплектация</th>
+                        <th v-for="i in element.col['Комплектация'].cols">{{ i.z }}</th>
+                    </tr>
+                    <tr v-if="(z.type!=='Изображение')&&(z.type!=='Название')&&(i!=='Комплектация')" v-for="(z,i) in element.col">
+                        <th>
+                            {{ i }}
+                        </th>
+                        <td v-for="i2 in z.cols" v-if="i2.new" v-bind:colspan="i2.span" align="center">
+                            <font v-if="i2.type==='Целое'||i2.type==='Дробное'">
+                                {{ i2.z.toLocaleString() }}
+                            </font>
+                            <font v-else>
+                                {{ i2.z }}
+                            </font>
+                            {{ i2.ed }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div v-if="page==='Поиск'">
+            Название:<input type="text" v-model="poiskText">
+            <br />
+            Марка:
+            <select v-model="poiskMarka">
+                <option>
+                </option>
+                <option v-for="i in data.Марка.nabor">
+                    {{ i }}
+                </option>
+            </select>
+            <br />
+            Сортировка:
+            <select v-model="sort">
+                <option>
+                </option>
+                <option v-for="(z,i) in data" v-if="z.type=='Дробное'||z.type=='Целое'">
+                    {{ i }}
+                </option>
+            </select>
+            <select v-model="sort_min_max">
+                <option>
+                    мин.
+                </option>
+                <option>
+                    макс.
+                </option>
+            </select>
+            <button v-if="sort_napr==='∨'" v-on:click="sort_napr='∧'">{{ sort_napr }}</button>
+            <button v-if="sort_napr==='∧'" v-on:click="sort_napr='∨'">{{ sort_napr }}</button>
+            <br />
+            Фильтры:
+            <br/>
+            Добавить:<select v-model="new_filter">
+                <option>
+                </option>
+                <option v-for="(z,i) in data" v-if="(!filters_m.includes(i))&&((z.type!=='Изображение')&&(z.type!=='Название')&&(i!=='Комплектация'))">
+                    {{ i }}
+                </option>
+            </select>
+            <br/>
+            <div v-for="(z,i) in filters">
+                <button v-on:click="delete_filter_index=i">Удалить</button>
+                <select v-model="filters_m[i]" v-on:change="filter_change(i)">
+                    <!--<option>
+                    </option>-->
+                    <option v-for="(z2,i2) in data" v-if="(z2.type!=='Изображение')&&(z2.type!=='Название')&&(i2!=='Комплектация')">
+                        {{ i2 }}
+                    </option>
+                </select>
+                <div v-if="data[filters_m[i]].type==='Выбор'">
+                    <select v-model="filters_z[i]" multiple> <!--v-on:mousedown="vybor_filter"-->
+                        <option v-for="(z2,i2) in data[filters_m[i]].nabor">
+                            {{ z2 }}
+                        </option>
+                    </select>
+                </div>
+                <div v-else>
+                    <div>
+                        От: <input type="number" ot_do="ot" v-model.number="filters_ot[i]" v-on:input="filter_onchange" />
+                        <input ot_do="ot" v-if="data[filters_m[i]].type==='Дробное'" type="range" step="0.1" v-on:change="filter_onchange" v-model.number="filters_ot[i]" v-bind:min="data[filters_m[i]].min" v-bind:max="data[filters_m[i]].max" />
+                        <input ot_do="ot" v-if="data[filters_m[i]].type==='Целое'" type="range" step="1" v-on:change="filter_onchange" v-model.number="filters_ot[i]" v-bind:min="data[filters_m[i]].min" v-bind:max="data[filters_m[i]].max" />
+                    </div>
+                    <div>
+                        До: <input ot_do="do" type="number" v-model.number="filters_do[i]" v-on:input="filter_onchange" />
+                        <input ot_do="do" v-if="data[filters_m[i]].type==='Дробное'" type="range" step="0.1" v-on:change="filter_onchange" v-model.number="filters_do[i]" v-bind:min="data[filters_m[i]].min" v-bind:max="data[filters_m[i]].max" />
+                        <input ot_do="do" v-if="data[filters_m[i]].type==='Целое'" type="range" step="1" v-on:change="filter_onchange" v-model.number="filters_do[i]" v-bind:min="data[filters_m[i]].min" v-bind:max="data[filters_m[i]].max" />
+                    </div>
+                </div>
+            </div>
+            <br/>
+            <!--<button v-if="poisk(i)" v-for="i in nazv" v-on:click="page='element';element=i;element_page=element_pages[0]">
+                <img v-bind:src="i.data.Изображение.nabor[0]" width="100px" />
+                <br />
+                <font v-for="(z,i2) in i.name">{{ z }} </font>
+            </button>-->
+            <div>
+                Выбрано: {{ spisok_selected }} из {{ nazv.length }}
+            </div>
+            <button v-for="i in spisok" v-on:click="page='element';element=i;element_page=element_pages[0]">
+                <img v-bind:src="i.data.Изображение.nabor[0]" width="100px" />
+                <br />
+                <font v-for="(z,i2) in i.name">{{ z }} </font>
+                <br />
+                <font>
+                    {{ i.data.Цена.min.toLocaleString() }} {{ i.data.Цена.ed }}
+                </font>
+                <br />
+                <font v-if="i.data.Цена.min!==i.data.Цена.max">
+                    {{ i.data.Цена.max.toLocaleString() }} {{ i.data.Цена.ed }}
+                </font>
+            </button>
+        </div>
+    </div>
+    <div v-else>
+        Загрузка...
+    </div>
+</div>
+<script>
+    var pril = new Vue
+    ({
+        el: '#osn',
+        data:
+        {
+            zagr: false,
+            page:"Поиск",
+            pages:["Поиск"],
+            data:[],
+            types:[],
+            table:[],
+            z:[],
+            nazv:[],
+            element:[],
+            element_pages:["Обзор","Комплектации"],
+            element_page:"Обзор",
+            poiskText:"",
+            poiskMarka:"",
+            spisok_m:[],
+            sort_napr:"∧",
+            sort:"",
+            sort_min_max:"мин.",
+            filters_m:[],
+            filters_types:[],
+            filters_z:[],
+            new_filter:"",
+            delete_filter_index:null,
+            filters_flag:false,
+            spisok_selected:0,
+            spisok_vsego:0
+        },
+        methods:
+        {
+            filter_delete:function(e)
+            {
+                aaa=e.target;
+            },
+            filter_onchange:function(e)
+            {
+                //aaa=e.target;
+                //window.getSelection().removeAllRanges();
+                //document.selection.empty();
+                this.filters_flag=true;
+                console.log("!");
+                console.log(e);
+                var tmp = document.createElement("input");
+                document.body.appendChild(tmp);
+                tmp.focus();
+                document.body.removeChild(tmp);  
+                e.target.focus();
+                for(var i in this.filters_m)
+                {
+                    if(this.data[this.filters_m[i]].type!=="Выбор")
+                    {
+                        if(this.filters_ot[i]<this.data[this.filters_m[i]].min)
+                        {
+                            this.filters_ot[i]=this.data[this.filters_m[i]].min;
+                        }
+                        if(this.filters_do[i]>this.data[this.filters_m[i]].max)
+                        {
+                            this.filters_do[i]=this.data[this.filters_m[i]].max;
+                        }
+                        if(this.filters_ot[i]>this.filters_do[i])
+                        {
+                            if(e.target.getAttribute("ot_do")==="do")
+                            {
+                                this.filters_ot[i]=this.filters_do[i];
+                            }
+                            else
+                            {
+                                this.filters_do[i]=this.filters_ot[i];
+                            }
+                            
+                        }
+                    }
+                }
+            },
+            poiskTextFunction:function(te)
+            {
+                txt=this.poiskText.toLocaleLowerCase();
+                if(txt==="")
+                {
+                    return true;
+                }
+                var f=false;
+                for(var i in te.name)
+                {
+                    if(te.name[i].toLocaleLowerCase().indexOf(txt)===0)
+                    {
+                        f=true;
+                    }
+                }
+                if(!f)
+                {
+                    return false;
+                }
+                return true;
+            },
+            poiskMarkaFunction:function(te)
+            {
+                if(this.poiskMarka==="")
+                {
+                    return true;
+                }
+                return this.poiskMarka===te.data.Марка.nabor[0];
+            },
+            vybor_filter:function(e)
+            {
+                e.preventDefault();
+                e.target.selected=!e.target.selected;
+                return false;
+            },
+            filter_change:function(i)
+            {
+                if(this.filters_m[i]==="")
+                {
+                    return;
+                }
+                if(this.data[this.filters_m[i]].type==="Выбор")
+                {
+                    this.filters_z[i]=[];
+                    this.filters_ot[i]=null;
+                    this.filters_do[i]=null;
+                }
+                else
+                {
+                    this.filters_z[i]=null;
+                    this.filters_ot[i]=this.data[this.filters_m[i]].min;
+                    this.filters_do[i]=this.data[this.filters_m[i]].max;
+                }
+            }
+            
+        },
+        computed:
+        {
+            spisok:function()//внутри будет срез для показа нужной из страниц
+            {
+                var rez=[];
+                for(var i in this.nazv)
+                {
+                    if(!this.poiskTextFunction(this.nazv[i]))
+                    {
+                        continue;
+                    }
+                    if(!this.poiskMarkaFunction(this.nazv[i]))
+                    {
+                        continue;
+                    }
+                    //var all_filters_true=true;
+                    /*for(var i2 in this.filters_m)
+                    {
+                        if(this.data[this.filters_m[i2]].type==="Выбор")
+                        {
+                            var tf=false;
+                            if(this.filters_z[i2].length===0)
+                            {
+                                tf=true;
+                            }
+                            else
+                            {
+                                for(var i3 in this.filters_z[i2])
+                                {
+                                    if(this.nazv[i].data[this.filters_m[i2]].nabor.includes(this.filters_z[i2][i3]))
+                                    {
+                                        tf=true;
+                                    }
+                                }
+                            }
+                            if(!tf)
+                            {
+                                all_filters_true=false;
+                            }
+                        }
+                        else
+                        {
+                            var tf=false;
+                            if((this.nazv[i].data[this.filters_m[i2]].min>=this.filters_ot[i2])&&(this.nazv[i].data[this.filters_m[i2]].min<=this.filters_do[i2]))
+                            {
+                                tf=true;
+                            }
+                            if((this.nazv[i].data[this.filters_m[i2]].max>=this.filters_ot[i2])&&(this.nazv[i].data[this.filters_m[i2]].max<=this.filters_do[i2]))
+                            {
+                                tf=true;
+                            }
+                            console.log(tf);
+                            if(!tf)
+                            {
+                                all_filters_true=false;
+                            }
+                        }
+                    }*/
+                    var stroka_true=false;
+                    for(var stroka in this.nazv[i].table)
+                    {
+                        var all_filters_true=true;
+                        for(var i2 in this.filters_m)
+                        {
+                            var tf=false;
+                            if(this.data[this.filters_m[i2]].type==="Выбор")
+                            {   
+                                if(this.filters_z[i2].length===0)
+                                {
+                                    tf=true;
+                                }
+                                else
+                                {
+                                    //for(var i3 in this.filters_z[i2])
+                                    //{
+                                    if(this.filters_z[i2].includes(this.nazv[i].table[stroka][this.filters_m[i2]].z))
+                                    {
+                                        tf=true;
+                                    }
+                                    //}
+                                }
+                                
+                            }
+                            else
+                            {
+                                if((this.filters_ot[i2]<=this.nazv[i].table[stroka][this.filters_m[i2]].z)&&(this.filters_do[i2]>=this.nazv[i].table[stroka][this.filters_m[i2]].z))
+                                {
+                                    tf=true;
+                                }
+                            }
+                            if(!tf)
+                            {
+                                all_filters_true=false;
+                            }
+                        }
+                        if(all_filters_true)
+                        {
+                            stroka_true=true;
+                        }
+                    }
+                    if(!stroka_true)
+                    {
+                        continue;
+                    }
+                    rez.push(this.nazv[i]);
+                }
+                if(this.sort!=="")
+                {
+                    var tp=this;
+                    rez.sort(function(a,b)
+                    {
+                        if(tp.sort_min_max==='мин.')
+                        {
+                            a=a.data[tp.sort].min;
+                            b=b.data[tp.sort].min;
+                        }
+                        else
+                        {
+                            a=a.data[tp.sort].max;
+                            b=b.data[tp.sort].max;
+                        }
+                        return a-b;
+                    });
+                }
+                if(this.sort_napr==="∨")
+                {
+                    rez.reverse();
+                }
+                this.spisok_selected=rez.length;
+                return rez;
+            },
+            filters:function()
+            {
+                if(this.filters_flag)
+                {
+                    this.filters_flag=false;
+                }
+                console.log("P");
+                if(this.delete_filter_index!==null)
+                {
+                    this.filters_z.splice(this.delete_filter_index,1);
+                    this.filters_m.splice(this.delete_filter_index,1);
+                    this.filters_ot.splice(this.delete_filter_index,1);
+                    this.filters_do.splice(this.delete_filter_index,1);
+                    this.delete_filter_index=null;
+                }
+                if(this.new_filter!=="")
+                {
+                    this.filters_m.push(this.new_filter);
+                    //this.filters_m.push(this.new_filter);
+                    if((this.data[this.new_filter].type==="Название")||(this.data[this.new_filter].type==="Выбор"))
+                    {
+                        this.filters_z.push([]);
+                        this.filters_ot.push(null);
+                        this.filters_do.push(null);
+                    }
+                    else
+                    {
+                        this.filters_z.push(null);
+                        this.filters_ot.push(this.data[this.new_filter].min);
+                        this.filters_do.push(this.data[this.new_filter].max);
+                    }
+                    this.new_filter="";
+                }
+                var new_m=[];
+                var new_z=[];
+                var new_ot=[];
+                var new_do=[];
+                for(var i in this.filters_m)
+                {
+                    if(this.filters_m[i]!=="")
+                    {
+                        new_m.push(this.filters_m[i]);
+                        new_z.push(this.filters_z[i]);
+                        new_ot.push(this.filters_ot[i]);
+                        new_do.push(this.filters_do[i]);
+                    }
+                }
+                this.filters_m=new_m;
+                this.filters_z=new_z;
+                this.filters_ot=new_ot;
+                this.filters_do=new_do;
+                return this.filters_m;
+            }
+        }
+    });
+    $.getJSON("getcsv.php",function(data)
+    {
+        console.log(data);
+        pril.z=data.z;
+        pril.types=data.types;
+        pril.table=data.table;
+        pril.data=data.data;
+        pril.nazv=data.nazv;
+        pril.zagr=true;
+    })
+</script>
