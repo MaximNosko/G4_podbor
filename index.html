@@ -167,20 +167,22 @@
         el: '#osn',
         data:
         {
-            zagr: false,
-            page:"Поиск",
-            pages:["Поиск"],
-            data:[],
-            types:[],
-            table:[],
-            z:[],
-            nazv:[],
-            element:[],
-            element_pages:["Обзор","Комплектации"],
-            element_page:"Обзор",
-            poiskText:"",
-            poiskMarka:"",
-            spisok_m:[],
+            zagr: false,//успешная загрузка данных
+            page:"Поиск",//текущая страница, отображаемая на экране
+            pages:["Поиск","Предпочтения"],//список страниц
+            data:[],//сводные данные
+            types:[],//типы данных
+            table:[],//таблица
+            z:[],//заголовки
+            nazv:[],//сводные данные по комбинациям названий
+            //обзор автомобиля
+            element:[],//выбранная комбинация названий, то есть автомобиль
+            element_pages:["Обзор","Комплектации"],//страницы просмотра автомобиля
+            element_page:"Обзор",//страница по умолчанию
+            //поиск и фильтрация
+            poiskText:"",//поиск по названиям
+            poiskMarka:"",//выбор марки
+            spisok_m:[],//
             sort_napr:"∧",
             sort:"",
             sort_min_max:"мин.",
@@ -192,14 +194,12 @@
             filters_flag:false,
             spisok_selected:0,
             spisok_vsego:0
+            //сравнение (будет)
+            //отклонения (будут)
         },
         methods:
         {
-            filter_delete:function(e)
-            {
-                aaa=e.target;
-            },
-            filter_onchange:function(e)
+            filter_onchange:function(e)//при изменении числовых фильтров
             {
                 //aaa=e.target;
                 //window.getSelection().removeAllRanges();
@@ -239,7 +239,7 @@
                     }
                 }
             },
-            poiskTextFunction:function(te)
+            poiskTextFunction:function(te)//определяет, удовлетворяет ли элемент введённой поисковой строке
             {
                 txt=this.poiskText.toLocaleLowerCase();
                 if(txt==="")
@@ -260,7 +260,7 @@
                 }
                 return true;
             },
-            poiskMarkaFunction:function(te)
+            poiskMarkaFunction:function(te)//определяет, соотвествует ли элемент марке
             {
                 if(this.poiskMarka==="")
                 {
@@ -268,13 +268,13 @@
                 }
                 return this.poiskMarka===te.data.Марка.nabor[0];
             },
-            vybor_filter:function(e)
+            vybor_filter:function(e)//для множественного выбора без ctrl (не используется)
             {
                 e.preventDefault();
                 e.target.selected=!e.target.selected;
                 return false;
             },
-            filter_change:function(i)
+            filter_change:function(i)//вызывается при изменении типа фильтра
             {
                 if(this.filters_m[i]==="")
                 {
@@ -297,8 +297,9 @@
         },
         computed:
         {
-            spisok:function()//внутри будет срез для показа нужной из страниц
+            spisok:function()//список при фильтрации
             {
+                //внутри будет срез для показа нужной из страниц
                 var rez=[];
                 for(var i in this.nazv)
                 {
@@ -426,7 +427,7 @@
                 this.spisok_selected=rez.length;
                 return rez;
             },
-            filters:function()
+            filters:function()//фильтры, для их динамического изменения и удаления
             {
                 if(this.filters_flag)
                 {
