@@ -162,9 +162,9 @@
             </button>
         </div>
         <div v-if="page==='Сравнение'">
-            <table>
+            <table border="1" v-if="sravn_m.length>0">
                 <tr>
-                    <th></th>
+                    <th>Автомобиль</th>
                     <th v-for="(z,i) in sravn_m">
                         <button v-on:click="sravn_m.splice(i,1)">
                             Убрать из сравнения
@@ -175,7 +175,28 @@
                         </b>
                     </th>
                 </tr>
+                <tr>
+                    <th>Комплектация</th>
+                    <th v-for="i in sravn_m">{{ i[0].col.Комплектация.cols[i[1]].z }}</th>
+                </tr>
+                <tr v-if="(z2.type!=='Изображение')&&(z2.type!=='Название')&&(i2!=='Комплектация')" v-for="(z2,i2) in sravn_m[0][0].col">
+                    <th>
+                        {{ i2 }}
+                    </th>
+                    <td v-for="i in sravn_m" align="center">
+                        <font v-if="i[0].col[i2].cols[i[1]].type==='Целое'||i[0].col[i2].cols[i[1]].type==='Дробное'">
+                            {{ i[0].col[i2].cols[i[1]].z.toLocaleString() }}
+                        </font>
+                        <font v-else>
+                            {{ i[0].col[i2].cols[i[1]].z }}
+                        </font>
+                        {{ i[0].col[i2].cols[i[1]].ed }}
+                    </td>
+                </tr>
             </table>
+            <div v-else>
+                Не выбраны комплектации для сравнения
+            </div>
         </div>
     </div>
     <div v-else>
@@ -203,18 +224,17 @@
             //поиск и фильтрация
             poiskText:"",//поиск по названиям
             poiskMarka:"",//выбор марки
-            spisok_m:[],//
-            sort_napr:"∧",
-            sort:"",
-            sort_min_max:"мин.",
-            filters_m:[],
-            filters_types:[],
-            filters_z:[],
-            new_filter:"",
-            delete_filter_index:null,
-            filters_flag:false,
-            spisok_selected:0,
-            spisok_vsego:0,
+            sort_napr:"∧",//напрвление сортировки
+            sort:"",//параметр сортировки
+            sort_min_max:"мин.",//сортировка числовых параметров
+            filters_m:[],//Параметры фильтрации
+            filters_z:[],//выбранные значения параметров со списком значений
+            filters_ot:[],//минимальные значения для числовых фильтров
+            filters_do:[],//максимальные значения для числовых фильтров
+            new_filter:"",//выбор нового параметра для фильтрации
+            delete_filter_index:null,//индекс удаляемого фильтра
+            filters_flag:false,//флаг изменения фильтров
+            spisok_selected:0,//сколько элементов было выбрано фильтрами
             //сравнение
             sravn_m:[]
             //отклонения (будут)
