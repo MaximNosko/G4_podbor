@@ -44,7 +44,12 @@
                 <table border="1">
                     <tr>
                         <th>Комплектация</th>
-                        <th v-for="i in element.col['Комплектация'].cols">{{ i.z }}</th>
+                        <th v-for="(z,i) in element.col['Комплектация'].cols">
+                            <button v-if="sravn_poisk(element,i)===-1" v-on:click="sravn_m.push([element,i])">Сравнить</button>
+                            <button v-else v-on:click="sravn_m.splice(sravn_poisk(element,i),1)">Убрать из сравнения</button>
+                            <br />
+                            {{ z.z }}
+                        </th>
                     </tr>
                     <tr v-if="(z.type!=='Изображение')&&(z.type!=='Название')&&(i!=='Комплектация')" v-for="(z,i) in element.col">
                         <th>
@@ -156,6 +161,22 @@
                 </font>
             </button>
         </div>
+        <div v-if="page==='Сравнение'">
+            <table>
+                <tr>
+                    <th></th>
+                    <th v-for="(z,i) in sravn_m">
+                        <button v-on:click="sravn_m.splice(i,1)">
+                            Убрать из сравнения
+                        </button>
+                        <br />
+                        <b v-for="i2 in z[0].name">
+                            {{ i2 }}
+                        </b>
+                    </th>
+                </tr>
+            </table>
+        </div>
     </div>
     <div v-else>
         Загрузка...
@@ -169,7 +190,7 @@
         {
             zagr: false,//успешная загрузка данных
             page:"Поиск",//текущая страница, отображаемая на экране
-            pages:["Поиск","Предпочтения"],//список страниц
+            pages:["Поиск","Сравнение","Предпочтения"],//список страниц
             data:[],//сводные данные
             types:[],//типы данных
             table:[],//таблица
@@ -193,12 +214,24 @@
             delete_filter_index:null,
             filters_flag:false,
             spisok_selected:0,
-            spisok_vsego:0
-            //сравнение (будет)
+            spisok_vsego:0,
+            //сравнение
+            sravn_m:[]
             //отклонения (будут)
         },
         methods:
         {
+            sravn_poisk:function(element,i)//ищет комплектацию в списке сравниваемых
+            {
+                for(var i2 in this.sravn_m)
+                {
+                    if((this.sravn_m[i2][0]===element)&&(this.sravn_m[i2][1]===i))
+                    {
+                        return i2;
+                    }
+                }
+                return -1;
+            },
             filter_onchange:function(e)//при изменении числовых фильтров
             {
                 //aaa=e.target;
