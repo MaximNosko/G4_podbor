@@ -32,7 +32,7 @@
                         {{ z.min.toLocaleString() }}..{{ z.max.toLocaleString() }} {{ z.ed }}
                     </font>
                 </font>
-                <img v-for="i2 in z.nabor" v-if="z.type==='Изображение'" v-bind:src="i2" width="100px" />
+                <img v-for="i2 in z.nabor" v-if="z.type==='Изображение'" v-bind:src="i2" width="300px" />
             </div>
             <div v-if="element_page==='Комплектации'">
                 <div v-if="z.type==='Название'" v-for="(z,i) in element.data">
