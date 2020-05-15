@@ -73,6 +73,13 @@
             </div>
         </div>
         <div v-if="page==='Поиск'">
+            <button v-on:click="sohr_poisk">
+                Сохранить
+            </button>
+            <button :disabled="prov_zagr_poisk" v-on:click="zagr_poisk">
+                Загрузить
+            </button>
+            <br />
             Название:<input type="text" v-model="poiskText">
             <br />
             Марка:
@@ -204,6 +211,13 @@
             </div>
         </div>
         <div v-if="page==='Предпочтения'">
+            <button v-on:click="sohr_predp">
+                Сохранить
+            </button>
+            <button :disabled="prov_zagr_predp" v-on:click="zagr_predp">
+                Загрузить
+            </button>
+            <br />
             Добавить:
             <select v-model="new_predp">
                 <option>
@@ -334,7 +348,7 @@
         data:
         {
             zagr: false,//успешная загрузка данных
-            page:"Предпочтения",//текущая страница, отображаемая на экране
+            page:"Поиск",//текущая страница, отображаемая на экране
             pages:["Поиск","Сравнение","Предпочтения"],//список страниц
             data:[],//сводные данные
             types:[],//типы данных
@@ -371,10 +385,62 @@
             predp_napr_for_number:["Равно","Не равно","Более","Менее"],//значения отклонений для числовых значений
             delete_predp_index:null,//индекс удаления предпочтения
             predp_flag:false,//флаг изменения предпочтений
-            predp_page:1//текущая отображаемая страница предпочтений
+            predp_page:1,//текущая отображаемая страница предпочтений
+            prov_zagr_poisk:false,//результат проверки возможности сохранения параметров поиска
+            prov_zagr_predp:false//результат проверки возможности сохранения параметров предпочтений
         },
         methods:
         {
+            zagr_poisk:function()//загрузка параметров поиска
+            {
+                var t=JSON.parse(localStorage.getItem("poisk"));
+                this.filters_m=t.filters_m;
+                this.filters_ot=t.filters_ot;
+                this.filters_z=t.filters_z;
+                this.filters_do=t.filters_do;
+                this.sort_min_max=t.sort_min_max;
+                this.sort=t.sort;
+                this.sort_napr=t.sort_napr;
+                this.poiskMarka=t.poiskMarka;
+                this.poiskText=t.poiskText;
+            },
+            sohr_poisk:function()//сохранение параметров поиск
+            {
+                localStorage.setItem("poisk",JSON.stringify(
+                {
+                    filters_m:this.filters_m,
+                    filters_ot:this.filters_ot,
+                    filters_z:this.filters_z,
+                    filters_do:this.filters_do,
+                    sort_min_max:this.sort_min_max,
+                    sort:this.sort,
+                    sort_napr:this.sort_napr,
+                    poiskMarka:this.poiskMarka,
+                    poiskText:this.poiskText
+                }));
+                this.prov_zagr_poisk=false;
+            },
+            zagr_predp:function()//загрузка параметров предпочтений
+            {
+                var t=JSON.parse(localStorage.getItem("predp"));
+                this.predp_m=t.predp_m;
+                this.predp_z=t.predp_z;
+                this.predp_v=t.predp_v;
+                this.predp_napr=t.predp_napr;
+                this.predp_page=t.predp_page;
+            },
+            sohr_predp:function()//сохранение параметров предпочтений
+            {
+                localStorage.setItem("predp",JSON.stringify(
+                {
+                    predp_m:this.predp_m,
+                    predp_z:this.predp_z,
+                    predp_v:this.predp_v,
+                    predp_napr:this.predp_napr,
+                    predp_page:this.predp_page
+                }));
+                this.prov_zagr_predp=false;
+            },
             sravn_poisk:function(element,i)//ищет комплектацию в списке сравниваемых
             {
                 for(var i2 in this.sravn_m)
@@ -839,5 +905,7 @@
         pril.data=data.data;
         pril.nazv=data.nazv;
         pril.zagr=true;
+        pril.prov_zagr_poisk=localStorage.getItem("poisk")===null;
+        pril.prov_zagr_predp=localStorage.getItem("predp")===null;
     })
 </script>
