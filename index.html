@@ -213,7 +213,15 @@
                 </option>
             </select>
             <div v-for="(z,i) in predp_spisok">
-                <button v-on:click="delete_predp_index=i">Удалить</button>
+                <button v-on:click="delete_predp_index=i">
+                    Удалить
+                </button>
+                Важность:
+                <select v-model.number="predp_v[i]">
+                    <option v-for="i2 in 3">
+                        {{ i2 }}
+                    </option>
+                </select>
                 <select v-model="predp_m[i]" v-on:change="predp_change(i)">
                     <option v-for="(z2,i2) in data" v-if="((!predp_m.includes(i2))||(predp_m[i]===i2))&&(z2.type!=='Изображение')&&(i2!=='Модель')&&(i2!=='Комплектация')">
                         {{ i2 }}
@@ -358,6 +366,7 @@
             predp_m:[],//список предпочтений
             predp_z:[],//выбранные значения параметров
             predp_napr:[],//желаемые направления отклонений
+            predp_v:[],//список важностей
             predp_napr_for_vybor:["Является","Не является"],//направления отклонений для выборных значений
             predp_napr_for_number:["Равно","Не равно","Более","Менее"],//значения отклонений для числовых значений
             delete_predp_index:null,//индекс удаления предпочтения
@@ -671,6 +680,7 @@
                     this.predp_z.splice(this.delete_predp_index,1);
                     this.predp_m.splice(this.delete_predp_index,1);
                     this.predp_napr.splice(this.delete_predp_index,1);
+                    this.predp_v.splice(this.delete_predp_index,1);
                     this.delete_predp_index=null;
                 }
                 if(this.new_predp!=="")
@@ -681,22 +691,26 @@
                     {
                         this.predp_z.push([]);
                         this.predp_napr.push("Является");
+                        this.predp_v.push(1);
                     }
                     else if(this.data[this.new_predp].type==="Дробное")
                     {
                         this.predp_z.push((this.data[this.new_predp].max+this.data[this.new_predp].min)/2);
                         this.predp_napr.push("Равно");
+                        this.predp_v.push(1);
                     }
                     else
                     {
                         this.predp_z.push(Math.round((this.data[this.new_predp].max+this.data[this.new_predp].min)/2));
                         this.predp_napr.push("Равно");
+                        this.predp_v.push(1);
                     }
                     this.new_predp="";
                 }
                 var new_m=[];
                 var new_z=[];
                 var new_napr=[];
+                var new_v=[];
                 for(var i in this.predp_m)
                 {
                     if(this.predp_m[i]!=="")
@@ -704,11 +718,13 @@
                         new_m.push(this.predp_m[i]);
                         new_z.push(this.predp_z[i]);
                         new_napr.push(this.predp_napr[i]);
+                        new_v.push(this.predp_v[i]);
                     }
                 }
                 this.predp_m=new_m;
                 this.predp_z=new_z;
                 this.predp_napr=new_napr;
+                this.predp_v=new_v;
                 return this.predp_m;
             },
             predp_norm:function()//проверка, соблюдены ли нормы предпочтений
@@ -727,7 +743,7 @@
             {
                 console.log("пересчёт результатов");
                 var rez=[];
-                var ves=100/this.predp_m.length;
+                //var ves=100/this.predp_m.length;
                 for(var i in this.nazv)
                 {
                     var tnazv=this.nazv[i];
@@ -737,6 +753,7 @@
                         var summa=0;
                         for(var i3 in this.predp_m)
                         {
+                            var ves=this.predp_v[i3];
                             if((this.data[this.predp_m[i3]].type==='Выбор')||(this.data[this.predp_m[i3]].type==='Название'))
                             {
                                 if(this.predp_napr[i3]==='Является')
