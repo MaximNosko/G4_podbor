@@ -159,7 +159,35 @@
             <div>
                 Выбрано: {{ spisok_selected }} из {{ nazv.length }}
             </div>
-            <button v-for="i in spisok" v-on:click="page='element';element=i;element_page=element_pages[0]">
+            <div>
+                Страница:
+                <button v-on:click="poisk_page=1" :disabled="poisk_page<=1">
+                    <<
+                </button>
+                <button v-on:click="poisk_page--" :disabled="poisk_page<=1">
+                    <
+                </button>
+                {{ poisk_page }} из {{ Math.ceil(spisok.length/poisk_page_kvo) }}
+                <button v-on:click="poisk_page++" :disabled="poisk_page>=Math.ceil(spisok.length/poisk_page_kvo)">
+                    >
+                </button>
+                <button v-on:click="poisk_page=Math.ceil(spisok.length/poisk_page_kvo)" :disabled="spisok>=Math.ceil(spisok.length/poisk_page_kvo)">
+                    >>
+                </button>
+                Показывать по
+                <select v-model.number="poisk_page_kvo" v-on:input="filter_onchange">
+                    <option>
+                        10
+                    </option>
+                    <option>
+                        20
+                    </option>
+                    <option>
+                        50
+                    </option>
+                </select>
+            </div>
+            <button v-for="(i,n) in spisok" v-if="(n>=(poisk_page-1)*poisk_page_kvo)&&(n<poisk_page*poisk_page_kvo)" v-on:click="page='element';element=i;element_page=element_pages[0]">
                 <img v-bind:src="i.data.Изображение.nabor[0]" width="100px" />
                 <br />
                 <font v-for="(z,i2) in i.name">{{ z }} </font>
@@ -278,20 +306,34 @@
                 Необходимо выбрать хотя бы одно значение во всех выбранных параметрах
             </div>
             <div v-else>
-                Страница:
-                <button v-on:click="predp_page=1" :disabled="predp_page<=1">
-                    <<
-                </button>
-                <button v-on:click="predp_page--" :disabled="predp_page<=1">
-                    <
-                </button>
-                {{ predp_page }} из {{ Math.ceil(predp_rez.length/10) }}
-                <button v-on:click="predp_page++" :disabled="predp_page>=Math.ceil(predp_rez.length/10)">
-                    >
-                </button>
-                <button v-on:click="predp_page=Math.ceil(predp_rez.length/10)" :disabled="predp_page>=Math.ceil(predp_rez.length/10)">
-                    >>
-                </button>
+                <div>
+                    Страница:
+                    <button v-on:click="predp_page=1" :disabled="predp_page<=1">
+                        <<
+                    </button>
+                    <button v-on:click="predp_page--" :disabled="predp_page<=1">
+                        <
+                    </button>
+                    {{ predp_page }} из {{ Math.ceil(predp_rez.length/predp_page_kvo) }}
+                    <button v-on:click="predp_page++" :disabled="predp_page>=Math.ceil(predp_rez.length/predp_page_kvo)">
+                        >
+                    </button>
+                    <button v-on:click="predp_page=Math.ceil(predp_rez.length/predp_page_kvo)" :disabled="predp_page>=Math.ceil(predp_rez.length/predp_page_kvo)">
+                        >>
+                    </button>
+                    Показывать по
+                    <select v-model.number="predp_page_kvo" v-on:input="predp_onchange">
+                        <option>
+                            10
+                        </option>
+                        <option>
+                            20
+                        </option>
+                        <option>
+                            50
+                        </option>
+                    </select>
+                </div>
                 <table border="1">
                     <tr>
                         <th>
@@ -313,7 +355,7 @@
                             {{ i }}
                         </th>
                     </tr>
-                    <tr v-if="(i>=(predp_page-1)*10)&&(i<predp_page*10)" v-for="(z,i) in predp_rez">
+                    <tr v-if="(i>=(predp_page-1)*predp_page_kvo)&&(i<predp_page*predp_page_kvo)" v-for="(z,i) in predp_rez">
                         <td>
                             <img v-bind:src="z.stroka.Изображение.z" width="100px" />
                         </td>
@@ -360,6 +402,8 @@
             element_pages:["Обзор","Комплектации"],//страницы просмотра автомобиля
             element_page:"Обзор",//страница по умолчанию
             //поиск и фильтрация
+            poisk_page:1,//текущая страница поиска
+            poisk_page_kvo:10,//количество элементов на странице
             poiskText:"",//поиск по названиям
             poiskMarka:"",//выбор марки
             sort_napr:"∧",//напрвление сортировки
@@ -386,6 +430,7 @@
             delete_predp_index:null,//индекс удаления предпочтения
             predp_flag:false,//флаг изменения предпочтений
             predp_page:1,//текущая отображаемая страница предпочтений
+            predp_page_kvo:10,//количество элементов на странице
             prov_zagr_poisk:false,//результат проверки возможности сохранения параметров поиска
             prov_zagr_predp:false//результат проверки возможности сохранения параметров предпочтений
         },
@@ -597,6 +642,7 @@
         {
             spisok:function()//список при фильтрации
             {
+                pril.poisk_page=1;
                 //внутри может быть срез для показа нужной страницы
                 var rez=[];
                 for(var i in this.nazv)
