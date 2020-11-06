@@ -1,4 +1,6 @@
 language: php
 php:
     - 7.2
+notifications:
+  slack: nameerror-sh38:D2CvVhxV009MFUI4uTxACTFV
 script: php getcsv.php
