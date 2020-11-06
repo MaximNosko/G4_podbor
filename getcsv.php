@@ -1,6 +1,7 @@
 <?php
 header("Cache-Control: no-cache, must-revalidate");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");//для предотвращения кэширования
+
 $RAZD=";";//разделитель, который используется в файле
 $txt=file_get_contents("m.csv");
 //первая строка - названия полей, должны быть уникальными
