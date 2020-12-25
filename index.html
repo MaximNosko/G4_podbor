@@ -562,7 +562,7 @@
             },
             poiskTextFunction:function(te)//определяет, удовлетворяет ли элемент введённой поисковой строке
             {
-                txt=this.poiskText.toLocaleLowerCase();
+                var txt=this.poiskText.toLocaleLowerCase();
                 if(txt==="")
                 {
                     return true;
@@ -898,34 +898,34 @@
                                         summa+=(1-razn)*ves;
                                         break;
                                     case "Не равно":
-                                        var razn=z-p_z;
-                                        razn=Math.abs(razn);
-                                        razn=razn/Math.abs(p_z);
-                                        summa+=razn*ves;
+                                        var razn_ne_ravno=z-p_z;
+                                        razn_ne_ravno=Math.abs(razn_ne_ravno);
+                                        razn_ne_ravno=razn_ne_ravno/Math.abs(p_z);
+                                        summa+=razn_ne_ravno*ves;
                                         break;
                                     case "Более":
-                                        var razn=z-p_z;
+                                        var razn_bolee=z-p_z;
                                         if(max!==p_z)
                                         {
-                                            razn=razn/(max-p_z);
+                                            razn_bolee=razn_bolee/(max-p_z);
                                         }
                                         else
                                         {
-                                            razn=1+razn/max;
+                                            razn_bolee=1+razn_bolee/max;
                                         }
-                                        summa+=razn*ves;
+                                        summa+=razn_bolee*ves;
                                         break;
                                     case "Менее":
-                                        var razn=z-p_z;
+                                        var razn_menee=z-p_z;
                                         if(min!==p_z)
                                         {
-                                            razn=razn/(min-p_z);
+                                            razn_menee=razn_menee/(min-p_z);
                                         }
                                         else
                                         {
-                                            razn=(1-razn/min);
+                                            razn_menee=(1-razn_menee/min);
                                         }
-                                        summa+=razn*ves;
+                                        summa+=razn_menee*ves;
                                         break;
                                 }
                             }
@@ -937,7 +937,7 @@
                 rez.sort(function(a,b)
                 {
                     return b.summa-a.summa;
-                })
+                });
                 return rez;
             }
         }
@@ -953,5 +953,5 @@
         pril.zagr=true;
         pril.prov_zagr_poisk=localStorage.getItem("poisk")===null;
         pril.prov_zagr_predp=localStorage.getItem("predp")===null;
-    })
+    });
 </script>
